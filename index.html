@@ -563,56 +563,19 @@ function buildRecruitmentPage(agent){
 
 /* ===== job poster =====
    The n8n form blocks iframe embedding (X-Frame-Options / frame-ancestors),
-   and a blocked frame still fires 'load' with the browser's block page — so we
-   can't trust onload. Default to a reliable launch screen that opens the form
-   in a new tab. Users can still attempt an inline embed; if it doesn't render
-   within a watchdog window, we revert to the launch screen automatically. */
+   so we present a clean launch screen that opens the form in a new tab. */
 function buildJobPoster(){
   var container = el("div",{class:"iframe-wrap"});
 
-  function showLaunch(){
-    container.innerHTML="";
-    var box = el("div",{class:"launch"});
-    box.appendChild(el("div",{class:"l-badge"},[ icon("send") ]));
-    box.appendChild(el("h4",null,"LinkedIn Job Post Generator"));
-    box.appendChild(el("p",null,"Create and publish a new job opening. The form runs on your n8n workflow and opens in a new tab — fill it in, submit, and the new job flows straight into your Job Dashboard."));
-    var actions = el("div",{class:"l-actions"});
-    actions.appendChild(el("a",{href:FORM_URL,target:"_blank",rel:"noopener",class:"l-primary"},[ icon("external"), "Open job posting form" ]));
-    var tryBtn = el("button",{class:"l-secondary"},[ icon("grid"), "Try inline preview" ]);
-    tryBtn.addEventListener("click",function(){ showEmbed(); });
-    actions.appendChild(tryBtn);
-    box.appendChild(actions);
-    box.appendChild(el("div",{class:"l-note"},"After submitting, switch to the Job Dashboard tab — your new posting appears automatically (auto-refresh runs every 30 seconds)."));
-    container.appendChild(box);
-  }
-
-  function showEmbed(){
-    container.innerHTML="";
-    var rendered = false;
-    var loader = el("div",{class:"iframe-loader"},[ el("div",{class:"spinner"}), el("span",null,"Attempting to load the form inline…") ]);
-    var frame = el("iframe",{src:FORM_URL,title:"LinkedIn Job Post Generator",allow:"clipboard-write"});
-    frame.addEventListener("load",function(){
-      /* A block page also fires 'load'. We can't read cross-origin contents,
-         so give it a brief moment, then keep the frame if visible. The user
-         always has the launch screen via the button below if it's blocked. */
-      rendered = true;
-      setTimeout(function(){ loader.classList.add("hide"); }, 400);
-    });
-    container.appendChild(loader);
-    container.appendChild(frame);
-
-    /* Watchdog: if the frame never fires load (hard block), revert. */
-    setTimeout(function(){ if(!rendered) showLaunch(); }, 7000);
-
-    /* Persistent escape hatch over the frame, in case it shows a block page. */
-    var bar = el("div",{style:"position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:10px;background:rgba(10,14,20,0.9);border:1px solid var(--border);border-radius:100px;padding:7px 8px 7px 16px;backdrop-filter:blur(6px)"});
-    bar.appendChild(el("span",{style:"font-size:0.78rem;color:var(--text-faint);align-self:center"},"Form blocked from embedding?"));
-    var backBtn = el("a",{href:FORM_URL,target:"_blank",rel:"noopener",class:"l-secondary",style:"padding:7px 14px;font-size:0.8rem"},[ icon("external"), "Open in new tab" ]);
-    bar.appendChild(backBtn);
-    container.appendChild(bar);
-  }
-
-  showLaunch();
+  var box = el("div",{class:"launch"});
+  box.appendChild(el("div",{class:"l-badge"},[ icon("send") ]));
+  box.appendChild(el("h4",null,"LinkedIn Job Post Generator"));
+  box.appendChild(el("p",null,"Create and publish a new job opening. The form runs on your n8n workflow and opens in a new tab — fill it in, submit, and the new job flows straight into your Job Dashboard."));
+  var actions = el("div",{class:"l-actions"});
+  actions.appendChild(el("a",{href:FORM_URL,target:"_blank",rel:"noopener",class:"l-primary"},[ icon("external"), "Open job posting form" ]));
+  box.appendChild(actions);
+  box.appendChild(el("div",{class:"l-note"},"After submitting, switch to the Job Dashboard tab — your new posting appears automatically (auto-refresh runs every 30 seconds)."));
+  container.appendChild(box);
 
   var headHint = el("span",{class:"hint"},[ el("span",{class:"dot-live"}), "Powered by n8n" ]);
   return el("div",{class:"form-shell"},[
