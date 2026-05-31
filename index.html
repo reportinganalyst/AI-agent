@@ -197,6 +197,20 @@
   .spinner{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .iframe-loader span{color:var(--text-dim);font-size:0.88rem}
+  .launch{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 28px;gap:6px}
+  .launch .l-badge{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:var(--accent-glow);border:1px solid rgba(61,220,151,0.25);margin-bottom:20px}
+  .launch .l-badge svg{width:30px;height:30px;color:var(--accent)}
+  .launch h4{font-family:var(--display);font-weight:600;font-size:1.25rem;color:var(--text);letter-spacing:-0.01em}
+  .launch p{color:var(--text-dim);font-size:0.92rem;line-height:1.6;max-width:460px;margin:10px 0 24px}
+  .launch .l-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .launch .l-primary{display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:var(--radius-sm);font-weight:600;font-size:0.92rem;background:linear-gradient(120deg,var(--accent),var(--accent-2));color:#06251a;text-decoration:none;transition:filter .2s,transform .15s}
+  .launch .l-primary:hover{filter:brightness(1.08)}
+  .launch .l-primary:active{transform:scale(.985)}
+  .launch .l-primary svg{width:17px;height:17px}
+  .launch .l-secondary{display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:var(--radius-sm);font-weight:500;font-size:0.92rem;background:var(--bg-elev);border:1px solid var(--border);color:var(--text-dim);transition:all .2s}
+  .launch .l-secondary:hover{color:var(--accent);border-color:rgba(61,220,151,0.4)}
+  .launch .l-secondary svg{width:16px;height:16px}
+  .launch .l-note{font-size:0.78rem;color:var(--text-faint);margin-top:20px;max-width:430px;line-height:1.5}
 
   /* dashboard */
   .dash{animation:rise .5s ease both}
@@ -343,7 +357,9 @@ var ICONS = {
   bolt:'<path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
   check:'<path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
   edit:'<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
-  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  external:'<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 function icon(name, cls){ return svg(ICONS[name]||ICONS.bolt, cls); }
 
@@ -545,15 +561,63 @@ function buildRecruitmentPage(agent){
   return page;
 }
 
-/* ===== job poster ===== */
+/* ===== job poster =====
+   The n8n form blocks iframe embedding (X-Frame-Options / frame-ancestors),
+   and a blocked frame still fires 'load' with the browser's block page — so we
+   can't trust onload. Default to a reliable launch screen that opens the form
+   in a new tab. Users can still attempt an inline embed; if it doesn't render
+   within a watchdog window, we revert to the launch screen automatically. */
 function buildJobPoster(){
-  var loader = el("div",{class:"iframe-loader"},[ el("div",{class:"spinner"}), el("span",null,"Loading job posting form…") ]);
-  var frame = el("iframe",{src:FORM_URL,title:"Job Poster Form",allow:"clipboard-write"});
-  frame.addEventListener("load",function(){ loader.classList.add("hide"); });
+  var container = el("div",{class:"iframe-wrap"});
+
+  function showLaunch(){
+    container.innerHTML="";
+    var box = el("div",{class:"launch"});
+    box.appendChild(el("div",{class:"l-badge"},[ icon("send") ]));
+    box.appendChild(el("h4",null,"LinkedIn Job Post Generator"));
+    box.appendChild(el("p",null,"Create and publish a new job opening. The form runs on your n8n workflow and opens in a new tab — fill it in, submit, and the new job flows straight into your Job Dashboard."));
+    var actions = el("div",{class:"l-actions"});
+    actions.appendChild(el("a",{href:FORM_URL,target:"_blank",rel:"noopener",class:"l-primary"},[ icon("external"), "Open job posting form" ]));
+    var tryBtn = el("button",{class:"l-secondary"},[ icon("grid"), "Try inline preview" ]);
+    tryBtn.addEventListener("click",function(){ showEmbed(); });
+    actions.appendChild(tryBtn);
+    box.appendChild(actions);
+    box.appendChild(el("div",{class:"l-note"},"After submitting, switch to the Job Dashboard tab — your new posting appears automatically (auto-refresh runs every 30 seconds)."));
+    container.appendChild(box);
+  }
+
+  function showEmbed(){
+    container.innerHTML="";
+    var rendered = false;
+    var loader = el("div",{class:"iframe-loader"},[ el("div",{class:"spinner"}), el("span",null,"Attempting to load the form inline…") ]);
+    var frame = el("iframe",{src:FORM_URL,title:"LinkedIn Job Post Generator",allow:"clipboard-write"});
+    frame.addEventListener("load",function(){
+      /* A block page also fires 'load'. We can't read cross-origin contents,
+         so give it a brief moment, then keep the frame if visible. The user
+         always has the launch screen via the button below if it's blocked. */
+      rendered = true;
+      setTimeout(function(){ loader.classList.add("hide"); }, 400);
+    });
+    container.appendChild(loader);
+    container.appendChild(frame);
+
+    /* Watchdog: if the frame never fires load (hard block), revert. */
+    setTimeout(function(){ if(!rendered) showLaunch(); }, 7000);
+
+    /* Persistent escape hatch over the frame, in case it shows a block page. */
+    var bar = el("div",{style:"position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:10px;background:rgba(10,14,20,0.9);border:1px solid var(--border);border-radius:100px;padding:7px 8px 7px 16px;backdrop-filter:blur(6px)"});
+    bar.appendChild(el("span",{style:"font-size:0.78rem;color:var(--text-faint);align-self:center"},"Form blocked from embedding?"));
+    var backBtn = el("a",{href:FORM_URL,target:"_blank",rel:"noopener",class:"l-secondary",style:"padding:7px 14px;font-size:0.8rem"},[ icon("external"), "Open in new tab" ]);
+    bar.appendChild(backBtn);
+    container.appendChild(bar);
+  }
+
+  showLaunch();
+
   var headHint = el("span",{class:"hint"},[ el("span",{class:"dot-live"}), "Powered by n8n" ]);
   return el("div",{class:"form-shell"},[
     el("div",{class:"form-shell-head"},[ el("h3",null,"Create & Publish a Job Opening"), headHint ]),
-    el("div",{class:"iframe-wrap"},[ loader, frame ])
+    container
   ]);
 }
 
