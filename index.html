@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ESG AI HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Spline+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-elev:#10151f;
+    --bg-card:#131a26;
+    --bg-card-hover:#19222f;
+    --border:#222d3d;
+    --border-soft:#1a2230;
+    --text:#e7ecf3;
+    --text-dim:#8a98ad;
+    --text-faint:#5b687c;
+    --accent:#3ddc97;
+    --accent-2:#2bb6ff;
+    --accent-glow:rgba(61,220,151,0.15);
+    --amber:#f5a623;
+    --red:#ff5d6c;
+    --blue:#2bb6ff;
+    --radius:16px;
+    --radius-sm:10px;
+    --shadow:0 14px 40px rgba(0,0,0,0.45);
+    --sans:'Spline Sans',sans-serif;
+    --display:'Sora',sans-serif;
+    --mono:'Spline Sans Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  #root{min-height:100vh}
+  ::selection{background:var(--accent-glow);color:var(--accent)}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select{font-family:inherit}
+  a{color:inherit;text-decoration:none}
+
+  /* atmospheric background */
+  .bg-atmos{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(800px 500px at 12% -5%, rgba(43,182,255,0.10), transparent 60%),
+      radial-gradient(700px 500px at 95% 0%, rgba(61,220,151,0.09), transparent 55%),
+      radial-gradient(900px 700px at 50% 120%, rgba(43,182,255,0.06), transparent 60%);
+  }
+  .bg-grid{
+    position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4;
+    background-image:linear-gradient(var(--border-soft) 1px,transparent 1px),linear-gradient(90deg,var(--border-soft) 1px,transparent 1px);
+    background-size:54px 54px;
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+  }
+  .shell{position:relative;z-index:1}
+
+  /* top bar */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 40px;border-bottom:1px solid var(--border-soft);
+    backdrop-filter:blur(8px);
+    position:sticky;top:0;z-index:20;
+    background:rgba(10,14,20,0.72);
+  }
+  .brand{display:flex;align-items:center;gap:14px;cursor:pointer}
+  .brand-mark{
+    width:40px;height:40px;border-radius:11px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;flex-shrink:0;
+    box-shadow:0 6px 20px var(--accent-glow);
+    position:relative;overflow:hidden;
+  }
+  .brand-mark svg{width:22px;height:22px}
+  .brand-text{line-height:1.1}
+  .brand-name{font-family:var(--display);font-weight:800;font-size:1.18rem;letter-spacing:-0.02em}
+  .brand-name .hl{color:var(--accent)}
+  .brand-sub{font-size:0.7rem;color:var(--text-faint);letter-spacing:0.18em;text-transform:uppercase;margin-top:2px}
+  .topbar-right{display:flex;align-items:center;gap:18px}
+  .pill{
+    font-size:0.72rem;color:var(--text-dim);border:1px solid var(--border);
+    padding:7px 14px;border-radius:100px;display:flex;align-items:center;gap:8px;
+    background:var(--bg-elev);
+  }
+  .dot-live{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent-glow);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,220,151,0.5)}70%{box-shadow:0 0 0 8px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+
+  /* breadcrumb */
+  .crumb{display:flex;align-items:center;gap:10px;padding:22px 40px 0;font-size:0.82rem;color:var(--text-faint)}
+  .crumb button{color:var(--text-dim);transition:color .15s}
+  .crumb button:hover{color:var(--accent)}
+  .crumb .sep{opacity:.5}
+  .crumb .cur{color:var(--text)}
+
+  /* hero / home */
+  .home-wrap{max-width:1240px;margin:0 auto;padding:48px 40px 80px}
+  .hero{margin-bottom:44px;animation:rise .6s ease both}
+  .hero h1{font-family:var(--display);font-size:clamp(2rem,4vw,3.1rem);font-weight:800;letter-spacing:-0.03em;line-height:1.05}
+  .hero h1 .grad{background:linear-gradient(120deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{color:var(--text-dim);font-size:1.05rem;max-width:620px;margin-top:16px;line-height:1.6}
+  .stat-row{display:flex;gap:30px;margin-top:30px;flex-wrap:wrap}
+  .stat-chip{display:flex;flex-direction:column;gap:2px}
+  .stat-chip b{font-family:var(--display);font-size:1.5rem;font-weight:700}
+  .stat-chip span{font-size:0.74rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.12em}
+
+  .section-label{display:flex;align-items:center;gap:14px;margin:10px 0 24px}
+  .section-label h2{font-family:var(--display);font-size:1.1rem;font-weight:600;letter-spacing:-0.01em}
+  .section-label .line{flex:1;height:1px;background:var(--border-soft)}
+  .section-label .count{font-family:var(--mono);font-size:0.78rem;color:var(--text-faint)}
+
+  .agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:22px}
+
+  .agent-card{
+    background:linear-gradient(165deg,var(--bg-card),var(--bg-elev));
+    border:1px solid var(--border);border-radius:var(--radius);
+    padding:26px;position:relative;overflow:hidden;
+    transition:transform .25s cubic-bezier(.2,.7,.3,1),border-color .25s,box-shadow .25s;
+    animation:rise .6s ease both;
+  }
+  .agent-card::before{
+    content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+    background:linear-gradient(135deg,var(--accent),transparent 40%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;
+  }
+  .agent-card:hover{transform:translateY(-6px);border-color:transparent;box-shadow:var(--shadow)}
+  .agent-card:hover::before{opacity:1}
+  .agent-card.disabled{opacity:.55}
+  .agent-card.disabled:hover{transform:none;box-shadow:none;border-color:var(--border)}
+  .agent-card.disabled:hover::before{opacity:0}
+
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+  .card-icon{
+    width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex-shrink:0;
+    background:var(--accent-glow);border:1px solid rgba(61,220,151,0.25);
+  }
+  .card-icon svg{width:26px;height:26px;color:var(--accent)}
+  .card-icon.muted{background:#1a2230;border-color:var(--border);color:var(--text-faint)}
+  .card-icon.muted svg{color:var(--text-faint)}
+
+  .status-badge{display:inline-flex;align-items:center;gap:7px;font-size:0.72rem;font-weight:500;padding:6px 11px;border-radius:100px}
+  .status-badge.active{color:var(--accent);background:var(--accent-glow);border:1px solid rgba(61,220,151,0.2)}
+  .status-badge.inactive{color:var(--text-faint);background:#161d29;border:1px solid var(--border)}
+  .status-badge .sd{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+  .agent-card h3{font-family:var(--display);font-size:1.22rem;font-weight:600;letter-spacing:-0.01em;margin-bottom:9px}
+  .agent-card .desc{color:var(--text-dim);font-size:0.9rem;line-height:1.55;margin-bottom:22px;min-height:62px}
+  .open-btn{
+    display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+    padding:12px;border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;
+    background:linear-gradient(120deg,var(--accent),var(--accent-2));color:#06251a;
+    transition:filter .2s,transform .15s;position:relative;z-index:2;
+  }
+  .open-btn:hover{filter:brightness(1.08)}
+  .open-btn:active{transform:scale(.985)}
+  .open-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-faint);cursor:not-allowed}
+  .open-btn svg{width:16px;height:16px;pointer-events:none}
+
+  /* agent page */
+  .agent-page{max-width:1320px;margin:0 auto;padding:28px 40px 80px}
+  .page-head{display:flex;align-items:center;gap:18px;margin-bottom:26px;animation:rise .5s ease both}
+  .page-head .card-icon{width:56px;height:56px}
+  .page-head h1{font-family:var(--display);font-size:1.7rem;font-weight:700;letter-spacing:-0.02em}
+  .page-head p{color:var(--text-dim);font-size:0.9rem;margin-top:3px;max-width:640px}
+
+  .tabs{display:flex;gap:6px;background:var(--bg-elev);border:1px solid var(--border-soft);padding:6px;border-radius:14px;width:fit-content;margin-bottom:28px}
+  .tab{
+    display:flex;align-items:center;gap:9px;padding:11px 22px;border-radius:10px;
+    font-weight:500;font-size:0.92rem;color:var(--text-dim);transition:all .2s;
+  }
+  .tab svg{width:17px;height:17px}
+  .tab.active{background:var(--bg-card);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+  .tab:not(.active):hover{color:var(--text)}
+
+  /* job poster */
+  .form-shell{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+    overflow:hidden;animation:rise .5s ease both;
+  }
+  .form-shell-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border-soft)}
+  .form-shell-head h3{font-family:var(--display);font-weight:600;font-size:1.02rem}
+  .form-shell-head .hint{font-size:0.78rem;color:var(--text-faint);display:flex;align-items:center;gap:8px}
+  .iframe-wrap{position:relative;width:100%;min-height:760px;background:var(--bg-elev)}
+  .iframe-wrap iframe{width:100%;height:760px;border:none;display:block;background:#fff}
+  .iframe-loader{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+    background:var(--bg-elev);transition:opacity .4s;z-index:2;
+  }
+  .iframe-loader.hide{opacity:0;pointer-events:none}
+  .spinner{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .iframe-loader span{color:var(--text-dim);font-size:0.88rem}
+
+  /* dashboard */
+  .dash{animation:rise .5s ease both}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:26px}
+  .kpi{
+    background:linear-gradient(160deg,var(--bg-card),var(--bg-elev));
+    border:1px solid var(--border);border-radius:var(--radius);padding:22px;position:relative;overflow:hidden;
+  }
+  .kpi .accent-line{position:absolute;left:0;top:0;bottom:0;width:3px}
+  .kpi .k-label{font-size:0.74rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.12em;display:flex;align-items:center;gap:9px}
+  .kpi .k-label svg{width:15px;height:15px}
+  .kpi .k-val{font-family:var(--display);font-size:2.2rem;font-weight:700;margin-top:12px;letter-spacing:-0.02em}
+  .kpi .k-sub{font-size:0.76rem;color:var(--text-faint);margin-top:4px}
+
+  .dash-toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .search-box{display:flex;align-items:center;gap:10px;background:var(--bg-elev);border:1px solid var(--border);border-radius:11px;padding:10px 14px;flex:1;min-width:230px}
+  .search-box svg{width:17px;height:17px;color:var(--text-faint);flex-shrink:0}
+  .search-box input{background:none;border:none;outline:none;color:var(--text);font-size:0.9rem;width:100%}
+  .search-box input::placeholder{color:var(--text-faint)}
+  .filter-sel{position:relative}
+  select.filter{
+    appearance:none;background:var(--bg-elev);border:1px solid var(--border);border-radius:11px;
+    padding:11px 38px 11px 16px;color:var(--text);font-size:0.88rem;outline:none;cursor:pointer;
+  }
+  .filter-sel::after{content:"";position:absolute;right:14px;top:50%;transform:translateY(-30%) rotate(45deg);width:6px;height:6px;border-right:2px solid var(--text-faint);border-bottom:2px solid var(--text-faint);pointer-events:none}
+  .refresh-btn{display:flex;align-items:center;gap:9px;background:var(--bg-elev);border:1px solid var(--border);border-radius:11px;padding:11px 18px;font-size:0.88rem;color:var(--text-dim);transition:all .2s}
+  .refresh-btn:hover{color:var(--accent);border-color:rgba(61,220,151,0.4)}
+  .refresh-btn svg{width:16px;height:16px;transition:transform .5s}
+  .refresh-btn.spinning svg{transform:rotate(360deg)}
+  .auto-toggle{display:flex;align-items:center;gap:9px;background:var(--bg-elev);border:1px solid var(--border);border-radius:11px;padding:10px 14px;font-size:0.84rem;color:var(--text-dim);transition:all .2s;cursor:pointer;user-select:none}
+  .auto-toggle:hover{border-color:rgba(61,220,151,0.4)}
+  .auto-toggle .switch{width:34px;height:18px;border-radius:100px;background:var(--border);position:relative;transition:background .2s;flex-shrink:0}
+  .auto-toggle .switch i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text-faint);transition:transform .2s,background .2s}
+  .auto-toggle.on{color:var(--accent);border-color:rgba(61,220,151,0.4)}
+  .auto-toggle.on .switch{background:var(--accent)}
+  .auto-toggle.on .switch i{transform:translateX(16px);background:#06251a}
+  .live-stamp{font-size:0.76rem;color:var(--text-faint);display:flex;align-items:center;gap:7px;margin-left:auto}
+  .live-stamp .dot-live{width:6px;height:6px}
+  @media(max-width:680px){ .live-stamp{margin-left:0;width:100%} }
+
+  .table-shell{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:1000px}
+  thead th{
+    text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);
+    font-weight:600;padding:15px 18px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg-elev);
+    cursor:pointer;user-select:none;transition:color .15s;position:sticky;top:0;
+  }
+  thead th:hover{color:var(--text-dim)}
+  thead th .th-inner{display:flex;align-items:center;gap:6px}
+  thead th .sort-ind{font-size:0.7rem;color:var(--accent)}
+  tbody td{padding:15px 18px;border-bottom:1px solid var(--border-soft);font-size:0.88rem;white-space:nowrap;color:var(--text-dim)}
+  tbody tr{transition:background .15s}
+  tbody tr:hover{background:var(--bg-card-hover)}
+  tbody tr:last-child td{border-bottom:none}
+  td .jid{font-family:var(--mono);font-size:0.8rem;color:var(--text-faint)}
+  td .title-cell{color:var(--text);font-weight:500}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-size:0.74rem;font-weight:500;padding:5px 10px;border-radius:100px}
+  .tag .td{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .tag.active{color:var(--accent);background:var(--accent-glow)}
+  .tag.process{color:var(--amber);background:rgba(245,166,35,0.12)}
+  .tag.closed{color:var(--text-faint);background:#161d29}
+  .tag.draft{color:var(--blue);background:rgba(43,182,255,0.12)}
+  .num-pill{font-family:var(--mono);color:var(--text)}
+  .mini-bar{display:inline-block;width:40px;height:5px;border-radius:3px;background:var(--border);margin-left:8px;vertical-align:middle;position:relative;overflow:hidden}
+  .mini-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}
+
+  .empty{padding:60px;text-align:center;color:var(--text-faint)}
+  .empty svg{width:42px;height:42px;margin-bottom:14px;opacity:.5}
+
+  .pager{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-top:1px solid var(--border);flex-wrap:wrap;gap:12px}
+  .pager .info{font-size:0.82rem;color:var(--text-faint)}
+  .pager-btns{display:flex;align-items:center;gap:6px}
+  .pg-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);display:grid;place-items:center;font-size:0.85rem;color:var(--text-dim);transition:all .15s}
+  .pg-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .pg-btn.active{background:var(--accent);color:#06251a;border-color:var(--accent);font-weight:600}
+  .pg-btn:disabled{opacity:.35;cursor:not-allowed}
+
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+  @media(max-width:880px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .topbar,.crumb,.home-wrap,.agent-page{padding-left:20px;padding-right:20px}
+    .brand-sub{display:none}
+  }
+  @media(max-width:560px){
+    .kpi-grid{grid-template-columns:1fr 1fr;gap:12px}
+    .kpi .k-val{font-size:1.7rem}
+    .tabs{width:100%}
+    .tab{flex:1;justify-content:center;padding:11px 8px}
+    .stat-row{gap:20px}
+  }
+</style>
+<style>
+  /* fallback so layout works even if web fonts are blocked */
+  :root{
+    --sans:'Spline Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --display:'Sora',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --mono:'Spline Sans Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+</style>
+</head>
+<body>
+<div class="bg-atmos"></div>
+<div class="bg-grid"></div>
+<div id="root"></div>
+<script>
+"use strict";
+/* ===== tiny DOM helper ===== */
+function el(tag, attrs, children){
+  var node = document.createElement(tag);
+  attrs = attrs || {};
+  for(var k in attrs){
+    if(k==="class") node.className = attrs[k];
+    else if(k==="html") node.innerHTML = attrs[k];
+    else if(k.slice(0,2)==="on" && typeof attrs[k]==="function") node.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+    else if(k==="disabled"){ if(attrs[k]) node.setAttribute("disabled","disabled"); }
+    else if(attrs[k]!=null) node.setAttribute(k, attrs[k]);
+  }
+  if(children!=null){
+    if(!Array.isArray(children)) children=[children];
+    children.forEach(function(c){
+      if(c==null) return;
+      node.appendChild(typeof c==="string"||typeof c==="number" ? document.createTextNode(String(c)) : c);
+    });
+  }
+  return node;
+}
+function svg(inner, cls){
+  var s='<svg viewBox="0 0 24 24" fill="none" class="'+(cls||"")+'" xmlns="http://www.w3.org/2000/svg">'+inner+'</svg>';
+  var wrap=document.createElement("span"); wrap.style.display="inline-flex"; wrap.innerHTML=s; return wrap.firstChild;
+}
+
+/* ===== icons ===== */
+var ICONS = {
+  hub:'<path d="M12 2v4M12 18v4M2 12h4M18 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" stroke="#06251a" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" fill="#06251a"/>',
+  users:'<path d="M16 19v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M22 19v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  plus:'<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>',
+  search:'<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  refresh:'<path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  layers:'<path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  bolt:'<path d="M13 2 3 14h8l-1 8 10-12h-8l1-8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  check:'<path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  edit:'<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+function icon(name, cls){ return svg(ICONS[name]||ICONS.bolt, cls); }
+
+/* ===== agent registry (add new agents here) ===== */
+var AGENTS = [
+  { id:"recruitment", name:"Recruitment Agent",
+    description:"AI-powered recruitment automation platform for job posting, candidate screening, interview scheduling, and hiring workflow management.",
+    status:"active", icon:"users", page:"recruitment" }
+  /* future agents: add an object here and a card + page wire up automatically */
+];
+
+/* ===== status taxonomy ===== */
+function classifyStatus(raw){
+  var s=(raw||"").toLowerCase();
+  if(s.indexOf("close")>-1||s.indexOf("hired")>-1||s.indexOf("filled")>-1||s.indexOf("reject")>-1) return "closed";
+  if(s.indexOf("draft")>-1) return "draft";
+  return "active";
+}
+function statusTagClass(raw){
+  var s=(raw||"").toLowerCase();
+  if(s.indexOf("close")>-1||s.indexOf("hired")>-1||s.indexOf("reject")>-1) return "closed";
+  if(s.indexOf("draft")>-1) return "draft";
+  if(s.indexOf("interview")>-1||s.indexOf("process")>-1) return "process";
+  return "active";
+}
+
+/* ===== data layer — live from the n8n "Job Status" data table ===== */
+
+/* Public webhook URL exposing the Job Status table as JSON.
+   Build this in n8n: Webhook(GET, path "job-status") -> Get rows (Job Status table)
+   -> Respond to Webhook (JSON, header Access-Control-Allow-Origin: *). */
+var JOBS_WEBHOOK_URL = "https://nisar-ai-agents.app.n8n.cloud/webhook/job-status";
+
+/* number/null helper: extra columns that aren't in the table yet stay null -> render "—" */
+function numOrNull(v){
+  if(v===undefined || v===null || v==="") return null;
+  var n=Number(v); return isNaN(n) ? null : n;
+}
+
+/* Tolerant of n8n shapes: rows may be raw objects, wrapped as {json:{...}},
+   or carry the data table's own column names. Field lookup is case-flexible. */
+function pick(r){
+  var keys = Array.prototype.slice.call(arguments,1);
+  for(var i=0;i<keys.length;i++){ if(r[keys[i]]!==undefined && r[keys[i]]!==null && r[keys[i]]!=="") return r[keys[i]]; }
+  return undefined;
+}
+function normalizeJob(raw,i){
+  var r = (raw && raw.json) ? raw.json : (raw || {});
+  return {
+    key: pick(r,"JOB_ID","jobId","id") || ("row-"+i),
+    jobId: pick(r,"JOB_ID","jobId","job_id") || "—",
+    title: pick(r,"Position","title","JobTitle","job_title") || "Untitled Role",
+    department: pick(r,"Department","department") || null,
+    status: pick(r,"Status","status") || "Active",
+    createdAt: pick(r,"createdAt","created_at","created") || null,
+    applicants: numOrNull(pick(r,"applicants","totalApplicants","Applicants")),
+    qualified: numOrNull(pick(r,"qualified","qualifiedCandidates","Qualified")),
+    interviewed: numOrNull(pick(r,"interviewed","interviewedCandidates","Interviewed")),
+    hired: numOrNull(pick(r,"hired","hiredCandidates","Hired"))
+  };
+}
+
+/* Unwrap common n8n response envelopes into a flat array of rows. */
+function extractRows(payload){
+  if(Array.isArray(payload)) return payload;
+  if(payload && Array.isArray(payload.data)) return payload.data;       // { data: [...] }
+  if(payload && Array.isArray(payload.rows)) return payload.rows;       // { rows: [...] }
+  if(payload && Array.isArray(payload.results)) return payload.results; // { results: [...] }
+  if(payload && typeof payload==="object") return [payload];           // single object
+  return [];
+}
+
+function fetchJobs(){
+  return fetch(JOBS_WEBHOOK_URL, { method:"GET", headers:{ "Accept":"application/json" } })
+    .then(function(res){
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      return res.json();
+    })
+    .then(function(payload){
+      return extractRows(payload).map(normalizeJob);
+    });
+}
+
+/* ===== helpers ===== */
+function fmtDate(iso){
+  if(!iso) return "—";
+  try{ return new Date(iso).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); }
+  catch(e){ return iso; }
+}
+
+/* ===== router state ===== */
+var route = { view:"home", agent:null };
+var root = document.getElementById("root");
+
+function navHome(){ route={view:"home",agent:null}; render(); window.scrollTo({top:0,behavior:"smooth"}); }
+function navAgent(agent){ route={view:"agent",agent:agent}; render(); window.scrollTo({top:0,behavior:"smooth"}); }
+
+/* ===== shell ===== */
+function buildShell(){
+  var brand = el("div",{class:"brand",onclick:navHome},[
+    el("div",{class:"brand-mark"},[icon("hub")]),
+    el("div",{class:"brand-text"},[
+      (function(){ var d=el("div",{class:"brand-name"}); d.innerHTML='ESG <span class="hl">AI</span> HUB'; return d; })(),
+      el("div",{class:"brand-sub"},"Agent Command Center")
+    ])
+  ]);
+  var topbar = el("div",{class:"topbar"},[ brand,
+    el("div",{class:"topbar-right"},[ el("span",{class:"pill"},[ el("span",{class:"dot-live"}), "All systems operational" ]) ])
+  ]);
+  var crumbKids=[ el("button",{onclick:navHome},"Home") ];
+  if(route.view==="agent"){
+    crumbKids.push(el("span",{class:"sep"},"/"));
+    crumbKids.push(el("span",{class:"cur"},route.agent.name));
+  }
+  var crumb = el("div",{class:"crumb"},crumbKids);
+  var body = route.view==="home" ? buildHome() : buildAgentPage(route.agent);
+  return el("div",{class:"shell"},[ topbar, crumb, body ]);
+}
+
+/* ===== home ===== */
+function buildHome(){
+  var activeCount = AGENTS.filter(function(a){return a.status==="active";}).length;
+  var heroH1 = el("h1"); heroH1.innerHTML='The <span class="grad">ESG&nbsp;AI&nbsp;Hub</span><br>for every intelligent agent.';
+  var hero = el("div",{class:"hero"},[
+    heroH1,
+    el("p",null,"A unified command center for the AI agents built across the organization. Launch, monitor, and orchestrate automation from a single home."),
+    el("div",{class:"stat-row"},[
+      el("div",{class:"stat-chip"},[ el("b",null,String(AGENTS.length)), el("span",null,"Agents") ]),
+      el("div",{class:"stat-chip"},[ el("b",{style:"color:var(--accent)"},String(activeCount)), el("span",null,"Active") ]),
+      el("div",{class:"stat-chip"},[ el("b",null,"24/7"), el("span",null,"Availability") ])
+    ])
+  ]);
+  var sectionLabel = el("div",{class:"section-label"},[
+    el("h2",null,"AI Agents"), el("div",{class:"line"}),
+    el("span",{class:"count"}, (AGENTS.length<10?"0":"")+AGENTS.length+" registered")
+  ]);
+  var grid = el("div",{class:"agent-grid"});
+  AGENTS.forEach(function(a,i){ grid.appendChild(buildAgentCard(a,i)); });
+  return el("div",{class:"home-wrap"},[ hero, sectionLabel, grid ]);
+}
+
+function buildAgentCard(agent,index){
+  var active = agent.status==="active";
+  var card = el("div",{class:"agent-card"+(active?"":" disabled"),style:"animation-delay:"+(index*0.08)+"s"});
+  if(active){
+    card.style.cursor="pointer";
+    card.addEventListener("click",function(){ navAgent(agent); });
+  }
+  card.appendChild(el("div",{class:"card-top"},[
+    el("div",{class:"card-icon"+(active?"":" muted")},[icon(agent.icon)]),
+    el("span",{class:"status-badge "+(active?"active":"inactive")},[ el("span",{class:"sd"}), active?"Active":"Inactive" ])
+  ]));
+  card.appendChild(el("h3",null,agent.name));
+  card.appendChild(el("p",{class:"desc"},agent.description));
+  if(active){
+    card.appendChild(el("button",{class:"open-btn",onclick:function(e){ e.stopPropagation(); navAgent(agent); }},[ "Open Agent ", icon("arrow") ]));
+  }else{
+    card.appendChild(el("button",{class:"open-btn ghost",disabled:true},"Coming Soon"));
+  }
+  return card;
+}
+
+/* ===== agent page (dispatch by agent.page) ===== */
+function buildAgentPage(agent){
+  if(agent.page==="recruitment") return buildRecruitmentPage(agent);
+  return buildHome();
+}
+
+/* ===== recruitment page ===== */
+var FORM_URL = "https://nisar-ai-agents.app.n8n.cloud/form/477b38e2-94fb-405f-a60d-1b994777de46";
+function buildRecruitmentPage(agent){
+  var state = { tab:"poster" };
+  var page = el("div",{class:"agent-page"});
+
+  var head = el("div",{class:"page-head"},[
+    el("div",{class:"card-icon"},[icon("users")]),
+    el("div",null,[
+      el("h1",null,"Recruitment Agent"),
+      el("p",null,"AI-powered recruitment automation — job posting, candidate screening, interview scheduling, and hiring workflow management.")
+    ])
+  ]);
+
+  var tabPoster = el("button",{class:"tab active",onclick:function(){ setTab("poster"); }},[ icon("plus"), " Job Poster" ]);
+  var tabDash   = el("button",{class:"tab",onclick:function(){ setTab("dashboard"); }},[ icon("grid"), " Job Dashboard" ]);
+  var tabs = el("div",{class:"tabs"},[ tabPoster, tabDash ]);
+
+  var content = el("div");
+
+  function setTab(t){
+    state.tab=t;
+    tabPoster.className = "tab"+(t==="poster"?" active":"");
+    tabDash.className   = "tab"+(t==="dashboard"?" active":"");
+    content.innerHTML="";
+    content.appendChild(t==="poster" ? buildJobPoster() : buildDashboard());
+  }
+
+  page.appendChild(head); page.appendChild(tabs); page.appendChild(content);
+  setTab("poster");
+  return page;
+}
+
+/* ===== job poster ===== */
+function buildJobPoster(){
+  var loader = el("div",{class:"iframe-loader"},[ el("div",{class:"spinner"}), el("span",null,"Loading job posting form…") ]);
+  var frame = el("iframe",{src:FORM_URL,title:"Job Poster Form",allow:"clipboard-write"});
+  frame.addEventListener("load",function(){ loader.classList.add("hide"); });
+  var headHint = el("span",{class:"hint"},[ el("span",{class:"dot-live"}), "Powered by n8n" ]);
+  return el("div",{class:"form-shell"},[
+    el("div",{class:"form-shell-head"},[ el("h3",null,"Create & Publish a Job Opening"), headHint ]),
+    el("div",{class:"iframe-wrap"},[ loader, frame ])
+  ]);
+}
+
+/* ===== dashboard ===== */
+var COLUMNS = [
+  {key:"jobId",label:"Job ID"},{key:"title",label:"Job Title"},{key:"department",label:"Department"},
+  {key:"status",label:"Status"},{key:"createdAt",label:"Created"},{key:"applicants",label:"Applicants"},
+  {key:"qualified",label:"Qualified"},{key:"interviewed",label:"Interviewed"},{key:"hired",label:"Hired"}
+];
+var PAGE_SIZE = 5;
+
+function buildDashboard(){
+  var st = { jobs:[], loading:true, refreshing:false, error:null, q:"", statusFilter:"all", sortKey:"createdAt", sortDir:"desc", page:1, auto:true, poll:null, lastUpdated:null };
+  var wrap = el("div",{class:"dash"});
+
+  /* KPIs */
+  var kpiGrid = el("div",{class:"kpi-grid"});
+  function kpi(label,color,iconName){
+    var node = el("div",{class:"kpi"},[
+      el("div",{class:"accent-line",style:"background:"+color}),
+      el("div",{class:"k-label"},[ icon(iconName), " "+label ]),
+      el("div",{class:"k-val"},"—"),
+      el("div",{class:"k-sub"},"")
+    ]);
+    return { node:node, val:node.querySelector(".k-val"), sub:node.querySelector(".k-sub") };
+  }
+  var kTotal=kpi("Total Jobs","var(--accent-2)","layers"),
+      kActive=kpi("Active Jobs","var(--accent)","bolt"),
+      kClosed=kpi("Closed Jobs","var(--text-faint)","check"),
+      kDraft=kpi("Draft Jobs","var(--blue)","edit");
+  kTotal.sub.textContent="across all departments"; kActive.sub.textContent="in progress / sourcing";
+  kClosed.sub.textContent="filled or completed"; kDraft.sub.textContent="not yet published";
+  [kTotal,kActive,kClosed,kDraft].forEach(function(k){ kpiGrid.appendChild(k.node); });
+
+  /* toolbar */
+  var searchInput = el("input",{placeholder:"Search by job ID, title, department, status…",value:""});
+  searchInput.addEventListener("input",function(){ st.q=searchInput.value; st.page=1; renderTable(); });
+  var searchBox = el("div",{class:"search-box"},[ icon("search"), searchInput ]);
+
+  var sel = el("select",{class:"filter"},[
+    el("option",{value:"all"},"All statuses"), el("option",{value:"active"},"Active"),
+    el("option",{value:"closed"},"Closed"), el("option",{value:"draft"},"Draft")
+  ]);
+  sel.addEventListener("change",function(){ st.statusFilter=sel.value; st.page=1; renderTable(); });
+  var filterSel = el("div",{class:"filter-sel"},[ sel ]);
+
+  var refreshBtn = el("button",{class:"refresh-btn"},[ icon("refresh"), " Refresh" ]);
+  refreshBtn.addEventListener("click",function(){ load(true); });
+
+  var autoSwitch = el("span",{class:"switch"},[ el("i") ]);
+  var autoToggle = el("div",{class:"auto-toggle on"},[ autoSwitch, "Auto-refresh" ]);
+  autoToggle.addEventListener("click",function(){ st.auto=!st.auto; updateAuto(); });
+
+  var liveStamp = el("div",{class:"live-stamp"});
+
+  var toolbar = el("div",{class:"dash-toolbar"},[ searchBox, filterSel, refreshBtn, autoToggle, liveStamp ]);
+
+  /* table shell */
+  var thead = el("thead"); var headRow = el("tr");
+  COLUMNS.forEach(function(c){
+    var th = el("th",{onclick:function(){ toggleSort(c.key); }});
+    var inner = el("span",{class:"th-inner"},[ c.label ]);
+    th._ind = el("span",{class:"sort-ind"}); th._key=c.key;
+    inner.appendChild(th._ind);
+    th.appendChild(inner); headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  var tbody = el("tbody");
+  var table = el("table",null,[ thead, tbody ]);
+  var tableScroll = el("div",{class:"table-scroll"},[ table ]);
+  var pager = el("div",{class:"pager"});
+  var tableShell = el("div",{class:"table-shell"},[ tableScroll, pager ]);
+
+  wrap.appendChild(kpiGrid); wrap.appendChild(toolbar); wrap.appendChild(tableShell);
+
+  /* logic */
+  function computeKPIs(){
+    var total=st.jobs.length,a=0,c=0,d=0;
+    st.jobs.forEach(function(j){ var cl=classifyStatus(j.status); if(cl==="active")a++;else if(cl==="closed")c++;else if(cl==="draft")d++; });
+    return {total:total,active:a,closed:c,draft:d};
+  }
+  function getFiltered(){
+    var rows = st.jobs.slice();
+    if(st.q.trim()){
+      var t=st.q.toLowerCase();
+      rows=rows.filter(function(j){ return [j.jobId,j.title,j.department,j.status].some(function(v){ return String(v).toLowerCase().indexOf(t)>-1; }); });
+    }
+    if(st.statusFilter!=="all"){ rows=rows.filter(function(j){ return classifyStatus(j.status)===st.statusFilter; }); }
+    rows.sort(function(a,b){
+      var av=a[st.sortKey], bv=b[st.sortKey];
+      if(st.sortKey==="createdAt"){ av=new Date(av||0).getTime(); bv=new Date(bv||0).getTime(); }
+      else if(typeof av==="string"){ av=av.toLowerCase(); bv=String(bv).toLowerCase(); }
+      if(av<bv) return st.sortDir==="asc"?-1:1;
+      if(av>bv) return st.sortDir==="asc"?1:-1;
+      return 0;
+    });
+    return rows;
+  }
+  function toggleSort(key){
+    if(st.sortKey===key) st.sortDir = st.sortDir==="asc"?"desc":"asc";
+    else { st.sortKey=key; st.sortDir="asc"; }
+    renderTable();
+  }
+  function renderKPIs(){
+    if(st.loading){ kTotal.val.textContent=kActive.val.textContent=kClosed.val.textContent=kDraft.val.textContent="—"; return; }
+    var k=computeKPIs();
+    kTotal.val.textContent=k.total; kActive.val.textContent=k.active; kClosed.val.textContent=k.closed; kDraft.val.textContent=k.draft;
+  }
+  function spinnerCell(text){
+    var td=el("td",{colspan:COLUMNS.length});
+    var box=el("div",{class:"empty"});
+    var sp=el("div",{class:"spinner"}); sp.style.margin="0 auto 16px";
+    box.appendChild(sp); box.appendChild(document.createTextNode(text));
+    td.appendChild(box); var tr=el("tr"); tr.appendChild(td); return tr;
+  }
+  function emptyCell(){
+    var td=el("td",{colspan:COLUMNS.length});
+    var box=el("div",{class:"empty"},[ icon("inbox"), el("div",null,"No jobs match your filters.") ]);
+    td.appendChild(box); var tr=el("tr"); tr.appendChild(td); return tr;
+  }
+  function errorCell(msg){
+    var td=el("td",{colspan:COLUMNS.length});
+    var box=el("div",{class:"empty"});
+    box.appendChild(icon("inbox"));
+    box.appendChild(el("div",{style:"color:var(--red);font-weight:500;margin-bottom:6px"},"Couldn't load job data"));
+    box.appendChild(el("div",{style:"font-size:0.82rem;max-width:460px;margin:0 auto;line-height:1.5"}, msg));
+    var retry=el("button",{class:"refresh-btn",style:"margin-top:16px",onclick:function(){ load(false); }},[ icon("refresh"), " Try again" ]);
+    box.appendChild(retry);
+    td.appendChild(box); var tr=el("tr"); tr.appendChild(td); return tr;
+  }
+  /* numeric cell that renders "—" (muted) when the value is null/unknown */
+  function numCell(v, opts){
+    opts = opts || {};
+    if(v===null || v===undefined){
+      return el("td",null,[ el("span",{class:"num-pill",style:"color:var(--text-faint)"},"—") ]);
+    }
+    var span=el("span",{class:"num-pill"+(opts.style?"":""),style:opts.color?("color:"+opts.color):""},String(v));
+    var kids=[span];
+    if(opts.bar!=null){ kids.push(el("span",{class:"mini-bar"},[ el("i",{style:"width:"+opts.bar+"%"}) ])); }
+    return el("td",null,kids);
+  }
+  function renderTable(){
+    renderKPIs();
+    /* sort indicators */
+    headRow.querySelectorAll("th").forEach(function(th){ th._ind.textContent = th._key===st.sortKey ? (st.sortDir==="asc"?"▲":"▼") : ""; });
+    tbody.innerHTML="";
+    refreshBtn.className = "refresh-btn"+(st.refreshing?" spinning":"");
+    if(st.loading){ tbody.appendChild(spinnerCell("Loading job data…")); pager.innerHTML=""; return; }
+    if(st.error){ tbody.appendChild(errorCell(st.error)); pager.innerHTML=""; return; }
+    var filtered=getFiltered();
+    var totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+    if(st.page>totalPages) st.page=totalPages;
+    var pageRows=filtered.slice((st.page-1)*PAGE_SIZE, st.page*PAGE_SIZE);
+    if(pageRows.length===0){ tbody.appendChild(emptyCell()); pager.innerHTML=""; return; }
+    pageRows.forEach(function(j){
+      var tr=el("tr");
+      tr.appendChild(el("td",null,[ el("span",{class:"jid"},j.jobId) ]));
+      tr.appendChild(el("td",null,[ el("span",{class:"title-cell"},j.title) ]));
+      tr.appendChild(el("td",null, j.department!=null ? j.department : el("span",{style:"color:var(--text-faint)"},"—") ));
+      tr.appendChild(el("td",null,[ el("span",{class:"tag "+statusTagClass(j.status)},[ el("span",{class:"td"}), j.status ]) ]));
+      tr.appendChild(el("td",null,fmtDate(j.createdAt)));
+      tr.appendChild(numCell(j.applicants));
+      var barPct = (j.qualified!=null && j.applicants!=null && j.applicants>0) ? (j.qualified/j.applicants)*100 : null;
+      tr.appendChild(numCell(j.qualified,{bar:barPct}));
+      tr.appendChild(numCell(j.interviewed));
+      tr.appendChild(numCell(j.hired,{color:(j.hired!=null && j.hired>0)?"var(--accent)":"var(--text-faint)"}));
+      tbody.appendChild(tr);
+    });
+    /* pager */
+    pager.innerHTML="";
+    var start=(st.page-1)*PAGE_SIZE+1, end=Math.min(st.page*PAGE_SIZE,filtered.length);
+    pager.appendChild(el("span",{class:"info"},"Showing "+start+"–"+end+" of "+filtered.length+" jobs"));
+    var btns=el("div",{class:"pager-btns"});
+    var prev=el("button",{class:"pg-btn",disabled:st.page===1,onclick:function(){ st.page--; renderTable(); }},"‹"); btns.appendChild(prev);
+    for(var i=1;i<=totalPages;i++){ (function(p){ btns.appendChild(el("button",{class:"pg-btn"+(st.page===p?" active":""),onclick:function(){ st.page=p; renderTable(); }},String(p))); })(i); }
+    var next=el("button",{class:"pg-btn",disabled:st.page===totalPages,onclick:function(){ st.page++; renderTable(); }},"›"); btns.appendChild(next);
+    pager.appendChild(btns);
+  }
+  function load(isRefresh){
+    if(isRefresh) st.refreshing=true; else st.loading=true;
+    st.error=null;
+    renderTable();
+    fetchJobs().then(function(data){
+      st.jobs=data; st.loading=false; st.refreshing=false; st.error=null;
+      st.lastUpdated=new Date(); renderTable(); updateStamp();
+    }).catch(function(err){
+      st.loading=false; st.refreshing=false;
+      st.error = "The dashboard couldn't reach the n8n webhook ("+(err && err.message ? err.message : "network error")+"). Make sure the workflow is active and the Respond node sends an Access-Control-Allow-Origin header. Then press Try again.";
+      renderTable(); updateStamp();
+    });
+  }
+
+  var POLL_MS = 30000;
+  function updateAuto(){
+    autoToggle.className = "auto-toggle"+(st.auto?" on":"");
+    if(st.poll){ clearInterval(st.poll); st.poll=null; }
+    if(st.auto){
+      st.poll = setInterval(function(){
+        // stop if the dashboard has been removed from the page (user navigated away)
+        if(!document.body.contains(wrap)){ clearInterval(st.poll); st.poll=null; return; }
+        // don't stack requests or interrupt a manual refresh
+        if(!st.loading && !st.refreshing) load(true);
+      }, POLL_MS);
+    }
+    updateStamp();
+  }
+  function updateStamp(){
+    liveStamp.innerHTML="";
+    if(st.lastUpdated){
+      var t = st.lastUpdated.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+      if(st.auto) liveStamp.appendChild(el("span",{class:"dot-live"}));
+      liveStamp.appendChild(document.createTextNode((st.auto?"Live · ":"")+"Updated "+t));
+    } else if(st.auto){
+      liveStamp.appendChild(el("span",{class:"dot-live"}));
+      liveStamp.appendChild(document.createTextNode("Live"));
+    }
+  }
+
+  st.auto = true;
+  load(false);
+  updateAuto();
+  return wrap;
+}
+
+/* ===== mount ===== */
+function render(){
+  root.innerHTML="";
+  root.appendChild(buildShell());
+}
+render();
+</script>
+</body>
+</html>
