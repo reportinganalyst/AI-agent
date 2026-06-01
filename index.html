@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ESG AI HUB</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 115 115'%3E%3Crect width='115' height='115' rx='22' fill='white'/%3E%3Cpath d='M8 8 H92 V61 L50 103 V45.5 H8 Z' fill='%23396fb7'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Spline+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -24,6 +25,8 @@
     --amber:#f5a623;
     --red:#ff5d6c;
     --blue:#2bb6ff;
+    --brand:#396fb7;
+    --brand-light:#4f86d4;
     --radius:16px;
     --radius-sm:10px;
     --shadow:0 14px 40px rgba(0,0,0,0.45);
@@ -72,13 +75,12 @@
   }
   .brand{display:flex;align-items:center;gap:14px;cursor:pointer}
   .brand-mark{
-    width:40px;height:40px;border-radius:11px;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    width:auto;height:auto;border-radius:0;
+    background:transparent;
     display:grid;place-items:center;flex-shrink:0;
-    box-shadow:0 6px 20px var(--accent-glow);
-    position:relative;overflow:hidden;
+    position:relative;
   }
-  .brand-mark svg{width:22px;height:22px}
+  .brand-mark svg{width:24px;height:auto}
   .brand-text{line-height:1.1}
   .brand-name{font-family:var(--display);font-weight:800;font-size:1.18rem;letter-spacing:-0.02em}
   .brand-name .hl{color:var(--accent)}
@@ -296,7 +298,6 @@
   @media(max-width:880px){
     .kpi-grid{grid-template-columns:repeat(2,1fr)}
     .topbar,.crumb,.home-wrap,.agent-page{padding-left:20px;padding-right:20px}
-    .brand-sub{display:none}
   }
   @media(max-width:560px){
     .kpi-grid{grid-template-columns:1fr 1fr;gap:12px}
@@ -364,6 +365,20 @@ var ICONS = {
   send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 function icon(name, cls){ return svg(ICONS[name]||ICONS.bolt, cls); }
+
+/* ===== ESG company logo (recreated as clean SVG) =====
+   Blue arrow/flag mark with a square notch cut from the lower-left.
+   The notch is transparent so it takes the tile/background colour,
+   matching the original logo's negative-space design. */
+function logoMark(){
+  var wrap=document.createElement("span");
+  wrap.style.display="inline-flex";
+  wrap.innerHTML =
+    '<svg viewBox="0 0 100 115" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ESG logo">'
+    + '<path d="M0 0 H100 V65 L50 115 V49.5 H0 Z" fill="#396fb7"/>'
+    + '</svg>';
+  return wrap.firstChild;
+}
 
 /* ===== agent registry (add new agents here) ===== */
 var AGENTS = [
@@ -468,7 +483,7 @@ function navAgent(agent){ route={view:"agent",agent:agent}; render(); window.scr
 /* ===== shell ===== */
 function buildShell(){
   var brand = el("div",{class:"brand",onclick:navHome},[
-    el("div",{class:"brand-mark"},[icon("hub")]),
+    el("div",{class:"brand-mark"},[logoMark()]),
     el("div",{class:"brand-text"},[
       (function(){ var d=el("div",{class:"brand-name"}); d.innerHTML='ESG <span class="hl">AI</span> HUB'; return d; })(),
       el("div",{class:"brand-sub"},"Agent Command Center")
