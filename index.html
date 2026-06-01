@@ -200,7 +200,7 @@
   .launch{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:64px 28px;gap:6px}
   .launch .l-badge{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:var(--accent-glow);border:1px solid rgba(61,220,151,0.25);margin-bottom:20px}
   .launch .l-badge svg{width:30px;height:30px;color:var(--accent)}
-  .launch h4{font-family:var(--display);font-weight:600;font-size:1.25rem;color:var(--text);letter-spacing:-0.01em}
+  .launch h4{font-family:var(--display);font-weight:600;font-size:1.25rem;color:var(--text);letter-spacing:-0.01em;margin-bottom:24px}
   .launch p{color:var(--text-dim);font-size:0.92rem;line-height:1.6;max-width:460px;margin:10px 0 24px}
   .launch .l-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
   .launch .l-primary{display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:var(--radius-sm);font-weight:600;font-size:0.92rem;background:linear-gradient(120deg,var(--accent),var(--accent-2));color:#06251a;text-decoration:none;transition:filter .2s,transform .15s}
@@ -572,7 +572,6 @@ function buildJobPoster(){
   var box = el("div",{class:"launch"});
   box.appendChild(el("div",{class:"l-badge"},[ icon("send") ]));
   box.appendChild(el("h4",null,"LinkedIn Job Post Generator"));
-  box.appendChild(el("p",null,"Create and publish a new job opening. The form runs on your n8n workflow and opens in a new tab — fill it in, submit, and the new job flows straight into your Job Dashboard."));
   var actions = el("div",{class:"l-actions"});
   actions.appendChild(el("a",{href:FORM_URL,target:"_blank",rel:"noopener",class:"l-primary"},[ icon("external"), "Open job posting form" ]));
   box.appendChild(actions);
