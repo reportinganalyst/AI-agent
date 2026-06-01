@@ -253,7 +253,8 @@
 
   .table-shell{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
   .table-scroll{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:1000px}
+  table{width:100%;border-collapse:collapse;min-width:640px}
+  table.state-only{min-width:0}
   thead th{
     text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);
     font-weight:600;padding:15px 18px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg-elev);
@@ -278,7 +279,8 @@
   .mini-bar{display:inline-block;width:40px;height:5px;border-radius:3px;background:var(--border);margin-left:8px;vertical-align:middle;position:relative;overflow:hidden}
   .mini-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}
 
-  .empty{padding:60px;text-align:center;color:var(--text-faint)}
+  .empty{padding:60px 24px;text-align:center;color:var(--text-faint);max-width:520px;margin:0 auto}
+  .empty > div{overflow-wrap:anywhere}
   .empty svg{width:42px;height:42px;margin-bottom:14px;opacity:.5}
 
   .pager{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-top:1px solid var(--border);flex-wrap:wrap;gap:12px}
@@ -587,8 +589,7 @@ function buildJobPoster(){
 /* ===== dashboard ===== */
 var COLUMNS = [
   {key:"jobId",label:"Job ID"},{key:"title",label:"Job Title"},{key:"department",label:"Department"},
-  {key:"status",label:"Status"},{key:"createdAt",label:"Created"},{key:"applicants",label:"Applicants"},
-  {key:"qualified",label:"Qualified"},{key:"interviewed",label:"Interviewed"},{key:"hired",label:"Hired"}
+  {key:"status",label:"Status"},{key:"createdAt",label:"Created"}
 ];
 var PAGE_SIZE = 5;
 
@@ -728,13 +729,18 @@ function buildDashboard(){
     headRow.querySelectorAll("th").forEach(function(th){ th._ind.textContent = th._key===st.sortKey ? (st.sortDir==="asc"?"▲":"▼") : ""; });
     tbody.innerHTML="";
     refreshBtn.className = "refresh-btn"+(st.refreshing?" spinning":"");
-    if(st.loading){ tbody.appendChild(spinnerCell("Loading job data…")); pager.innerHTML=""; return; }
-    if(st.error){ tbody.appendChild(errorCell(st.error)); pager.innerHTML=""; return; }
+    function setStateOnly(on){
+      table.className = on ? "state-only" : "";
+      thead.style.display = on ? "none" : "";
+    }
+    if(st.loading){ setStateOnly(true); tbody.appendChild(spinnerCell("Loading job data…")); pager.innerHTML=""; return; }
+    if(st.error){ setStateOnly(true); tbody.appendChild(errorCell(st.error)); pager.innerHTML=""; return; }
     var filtered=getFiltered();
     var totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
     if(st.page>totalPages) st.page=totalPages;
     var pageRows=filtered.slice((st.page-1)*PAGE_SIZE, st.page*PAGE_SIZE);
-    if(pageRows.length===0){ tbody.appendChild(emptyCell()); pager.innerHTML=""; return; }
+    if(pageRows.length===0){ setStateOnly(true); tbody.appendChild(emptyCell()); pager.innerHTML=""; return; }
+    setStateOnly(false);
     pageRows.forEach(function(j){
       var tr=el("tr");
       tr.appendChild(el("td",null,[ el("span",{class:"jid"},j.jobId) ]));
@@ -742,11 +748,6 @@ function buildDashboard(){
       tr.appendChild(el("td",null, j.department!=null ? j.department : el("span",{style:"color:var(--text-faint)"},"—") ));
       tr.appendChild(el("td",null,[ el("span",{class:"tag "+statusTagClass(j.status)},[ el("span",{class:"td"}), j.status ]) ]));
       tr.appendChild(el("td",null,fmtDate(j.createdAt)));
-      tr.appendChild(numCell(j.applicants));
-      var barPct = (j.qualified!=null && j.applicants!=null && j.applicants>0) ? (j.qualified/j.applicants)*100 : null;
-      tr.appendChild(numCell(j.qualified,{bar:barPct}));
-      tr.appendChild(numCell(j.interviewed));
-      tr.appendChild(numCell(j.hired,{color:(j.hired!=null && j.hired>0)?"var(--accent)":"var(--text-faint)"}));
       tbody.appendChild(tr);
     });
     /* pager */
