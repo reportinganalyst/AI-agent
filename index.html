@@ -253,7 +253,7 @@
 
   .table-shell{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
   .table-scroll{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:640px}
+  table{width:100%;border-collapse:collapse;min-width:520px}
   table.state-only{min-width:0}
   thead th{
     text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);
@@ -588,7 +588,7 @@ function buildJobPoster(){
 
 /* ===== dashboard ===== */
 var COLUMNS = [
-  {key:"jobId",label:"Job ID"},{key:"title",label:"Job Title"},{key:"department",label:"Department"},
+  {key:"jobId",label:"Job ID"},{key:"title",label:"Job Title"},
   {key:"status",label:"Status"},{key:"createdAt",label:"Created"}
 ];
 var PAGE_SIZE = 5;
@@ -617,7 +617,7 @@ function buildDashboard(){
   [kTotal,kActive,kClosed,kDraft].forEach(function(k){ kpiGrid.appendChild(k.node); });
 
   /* toolbar */
-  var searchInput = el("input",{placeholder:"Search by job ID, title, department, status…",value:""});
+  var searchInput = el("input",{placeholder:"Search by job ID, title, status…",value:""});
   searchInput.addEventListener("input",function(){ st.q=searchInput.value; st.page=1; renderTable(); });
   var searchBox = el("div",{class:"search-box"},[ icon("search"), searchInput ]);
 
@@ -667,7 +667,7 @@ function buildDashboard(){
     var rows = st.jobs.slice();
     if(st.q.trim()){
       var t=st.q.toLowerCase();
-      rows=rows.filter(function(j){ return [j.jobId,j.title,j.department,j.status].some(function(v){ return String(v).toLowerCase().indexOf(t)>-1; }); });
+      rows=rows.filter(function(j){ return [j.jobId,j.title,j.status].some(function(v){ return String(v).toLowerCase().indexOf(t)>-1; }); });
     }
     if(st.statusFilter!=="all"){ rows=rows.filter(function(j){ return classifyStatus(j.status)===st.statusFilter; }); }
     rows.sort(function(a,b){
@@ -745,7 +745,6 @@ function buildDashboard(){
       var tr=el("tr");
       tr.appendChild(el("td",null,[ el("span",{class:"jid"},j.jobId) ]));
       tr.appendChild(el("td",null,[ el("span",{class:"title-cell"},j.title) ]));
-      tr.appendChild(el("td",null, j.department!=null ? j.department : el("span",{style:"color:var(--text-faint)"},"—") ));
       tr.appendChild(el("td",null,[ el("span",{class:"tag "+statusTagClass(j.status)},[ el("span",{class:"td"}), j.status ]) ]));
       tr.appendChild(el("td",null,fmtDate(j.createdAt)));
       tbody.appendChild(tr);
