@@ -438,9 +438,15 @@ function fetchJobs(){
   return fetch(JOBS_WEBHOOK_URL, { method:"GET", headers:{ "Accept":"application/json" } })
     .then(function(res){
       if(!res.ok) throw new Error("HTTP "+res.status);
-      return res.json();
+      return res.text();
     })
-    .then(function(payload){
+    .then(function(text){
+      /* Empty body = the Job Status table has no rows yet. Treat as zero jobs
+         rather than a JSON parse error. */
+      if(!text || !text.trim()) return [];
+      var payload;
+      try { payload = JSON.parse(text); }
+      catch(e){ throw new Error("the webhook returned a non-JSON response"); }
       return extractRows(payload).map(normalizeJob);
     });
 }
@@ -698,7 +704,9 @@ function buildDashboard(){
   }
   function emptyCell(){
     var td=el("td",{colspan:COLUMNS.length});
-    var box=el("div",{class:"empty"},[ icon("inbox"), el("div",null,"No jobs match your filters.") ]);
+    var noneAtAll = st.jobs.length===0;
+    var msg = noneAtAll ? "No jobs posted yet. Use the Job Poster tab to create one." : "No jobs match your filters.";
+    var box=el("div",{class:"empty"},[ icon("inbox"), el("div",null,msg) ]);
     td.appendChild(box); var tr=el("tr"); tr.appendChild(td); return tr;
   }
   function errorCell(msg){
