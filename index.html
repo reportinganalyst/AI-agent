@@ -408,7 +408,7 @@ function statusTagClass(raw){
 /* Public webhook URL exposing the Job Status table as JSON.
    Build this in n8n: Webhook(GET, path "job-status") -> Get rows (Job Status table)
    -> Respond to Webhook (JSON, header Access-Control-Allow-Origin: *). */
-var JOBS_WEBHOOK_URL = "https://nisar-ai-agents.app.n8n.cloud/webhook/job-status";
+var JOBS_WEBHOOK_URL = "https://jojoes.app.n8n.cloud/webhook/job-status";
 
 /* number/null helper: extra columns that aren't in the table yet stay null -> render "—" */
 function numOrNull(v){
@@ -552,7 +552,7 @@ function buildAgentPage(agent){
 }
 
 /* ===== recruitment page ===== */
-var FORM_URL = "https://nisar-ai-agents.app.n8n.cloud/form/477b38e2-94fb-405f-a60d-1b994777de46";
+var FORM_URL = "https://jojoes.app.n8n.cloud/form/477b38e2-94fb-405f-a60d-1b994777de46";
 function buildRecruitmentPage(agent){
   var state = { tab:"poster" };
   var page = el("div",{class:"agent-page"});
