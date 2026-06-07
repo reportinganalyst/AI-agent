@@ -428,7 +428,7 @@ function normalizeJob(raw,i){
   return {
     key: pick(r,"JOB_ID","jobId","id") || ("row-"+i),
     jobId: pick(r,"JOB_ID","jobId","job_id") || "—",
-    title: pick(r,"Position","title","JobTitle","job_title") || "Untitled Role",
+    title: pick(r,"position","Position","title","JobTitle","job_title") || "Untitled Role",
     department: pick(r,"Department","department") || null,
     status: pick(r,"Status","status") || "Active",
     createdAt: pick(r,"createdAt","created_at","created") || null,
